@@ -4,7 +4,7 @@
 
   Nikita Nagfase 
 
-## 🏫 Affiliation
+## Affiliation
 
 Department of MCA
 Suryodaya College Of Engineering And Technology, Nagpur 
