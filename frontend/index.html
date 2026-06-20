@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArtBazaar – Where Handmade Art Finds Its Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>" />
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <div class="navbar__inner">
+    <a href="index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+
+    <div class="navbar__links">
+      <a href="index.html" class="active">Home</a>
+      <a href="pages/marketplace.html">Marketplace</a>
+      <a href="pages/artists.html">Artists</a>
+      <a href="#how-it-works">How It Works</a>
+    </div>
+
+    <div class="navbar__search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search artworks…" id="navSearch" />
+    </div>
+
+    <div class="navbar__actions" id="navActions">
+      <!-- Injected by JS -->
+    </div>
+
+    <button class="navbar__menu-btn" id="menuBtn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero__text" data-aos>
+    <div class="hero__eyebrow">India's Handmade Art Marketplace</div>
+    <h1 class="hero__title">
+      Discover Art That<br/>
+      <em>Tells a Story</em>
+    </h1>
+    <p class="hero__subtitle">
+      A curated marketplace connecting independent artists with people who love meaningful, one-of-a-kind handmade creations. Support creators. Own originals.
+    </p>
+    <div class="hero__cta">
+      <a href="pages/marketplace.html" class="btn btn-primary btn-lg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Explore Artworks
+      </a>
+      <a href="pages/register.html?role=artist" class="btn btn-outline btn-lg">Sell Your Art →</a>
+    </div>
+    
+  </div>
+
+  <div class="hero__visual">
+    <div class="hero__mosaic">
+      <div class="hero__mosaic-img">
+        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&q=80" alt="Painting" loading="lazy"/>
+      </div>
+      <div class="hero__mosaic-img">
+        <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Sculpture" loading="lazy"/>
+      </div>
+      <div class="hero__mosaic-img">
+        <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80" alt="Textile art" loading="lazy"/>
+      </div>
+    </div>
+    <!-- Floating badge -->
+    <div style="position:absolute;bottom:80px;left:32px;background:white;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(26,20,16,0.15);display:flex;align-items:center;gap:12px;border:1px solid var(--border);">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--terracotta);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎨</div>
+      <div>
+        <div style="font-size:0.75rem;color:var(--ink-soft);">Just sold</div>
+        <div style="font-size:0.9rem;font-weight:600;color:var(--ink);">Monsoon Rhapsody</div>
+        <div style="font-size:0.8rem;color:var(--terracotta);">₹4,200</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Featured Categories ─────────────────────────────────── -->
+<section class="section" style="background:var(--white);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-header__eyebrow">Browse by Style</span>
+      <h2 class="section-header__title">Every Medium, Every Story</h2>
+    </div>
+    <div class="grid-4" id="categoryGrid">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── Featured Artworks ────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom:40px;">
+      <div>
+        <span class="section-header__eyebrow">Handpicked for You</span>
+        <h2 style="margin-top:8px;">Featured Artworks</h2>
+      </div>
+      <a href="pages/marketplace.html" class="btn btn-ghost">View All →</a>
+    </div>
+    <div class="artwork-grid" id="featuredGrid">
+      <!-- Skeleton loading -->
+      <div class="artwork-card"><div class="skeleton" style="height:220px;"></div><div style="padding:16px"><div class="skeleton" style="height:16px;margin-bottom:8px;"></div><div class="skeleton" style="height:12px;width:60%;"></div></div></div>
+      <div class="artwork-card"><div class="skeleton" style="height:220px;"></div><div style="padding:16px"><div class="skeleton" style="height:16px;margin-bottom:8px;"></div><div class="skeleton" style="height:12px;width:60%;"></div></div></div>
+      <div class="artwork-card"><div class="skeleton" style="height:220px;"></div><div style="padding:16px"><div class="skeleton" style="height:16px;margin-bottom:8px;"></div><div class="skeleton" style="height:12px;width:60%;"></div></div></div>
+      <div class="artwork-card"><div class="skeleton" style="height:220px;"></div><div style="padding:16px"><div class="skeleton" style="height:16px;margin-bottom:8px;"></div><div class="skeleton" style="height:12px;width:60%;"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ─────────────────────────────────────────── -->
+<section class="section" id="how-it-works" style="background:var(--ink);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-header__eyebrow" style="color:var(--amber);">Simple Process</span>
+      <h2 style="color:var(--white);margin-top:8px;">How ArtBazaar Works</h2>
+    </div>
+    <div class="grid-3" style="gap:32px;" id="howGrid">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── AI Features Banner ──────────────────────────────────── -->
+<section class="section" style="background:linear-gradient(135deg,var(--cream-dark) 0%,var(--amber-light) 100%);">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;">
+      <div>
+        <span class="section-header__eyebrow" style="text-align:left;">Powered by AI</span>
+        <h2 style="margin-top:8px;margin-bottom:20px;">Smarter Art Discovery</h2>
+        <p style="color:var(--ink-soft);margin-bottom:32px;font-size:1.05rem;line-height:1.8;">
+          ArtBazaar uses cutting-edge AI to connect you with art you'll love — and to help artists reach the right audience.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:20px;" id="aiFeatures">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+      <div style="position:relative;">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"
+             alt="AI art discovery"
+             style="border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:100%;object-fit:cover;height:420px;" />
+        <div style="position:absolute;bottom:-20px;right:-20px;background:var(--white);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-md);border:1px solid var(--border);">
+          <div style="font-size:0.75rem;color:var(--ink-soft);margin-bottom:4px;">AI Match Score</div>
+          <div style="font-size:1.5rem;font-family:'Playfair Display',serif;font-weight:700;color:var(--terracotta);">98.4%</div>
+          <div style="font-size:0.8rem;color:var(--ink-soft);">Similarity match</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimonials ─────────────────────────────────────────── -->
+<section class="section" style="background:var(--white);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-header__eyebrow">What They Say</span>
+      <h2 class="section-header__title">Loved by Artists & Collectors</h2>
+    </div>
+    <div class="grid-3" id="testimonialGrid">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ──────────────────────────────────────────────────── -->
+<section style="background:var(--terracotta);padding:80px 0;text-align:center;">
+  <div class="container">
+    <h2 style="color:var(--white);margin-bottom:16px;font-size:2.4rem;">Ready to Start Your Art Journey?</h2>
+    <p style="color:rgba(255,255,255,0.8);font-size:1.1rem;margin-bottom:40px;">Join thousands of artists and collectors on ArtBazaar today.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="pages/register.html" class="btn btn-amber btn-lg">Create Free Account</a>
+      <a href="pages/marketplace.html" class="btn btn-lg" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.4);">Browse Artworks</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ───────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__logo">Art<span>Bazaar</span></div>
+        <p class="footer__desc">A digital home for handmade art — connecting independent artists with collectors who care.</p>
+        <div style="display:flex;gap:12px;">
+          <a href="#" class="btn btn-sm btn-ghost" style="color:rgba(250,247,242,0.6);border-color:rgba(250,247,242,0.1);">Instagram</a>
+          <a href="#" class="btn btn-sm btn-ghost" style="color:rgba(250,247,242,0.6);border-color:rgba(250,247,242,0.1);">Twitter</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__heading">Explore</div>
+        <ul class="footer__links">
+          <li><a href="pages/marketplace.html">Marketplace</a></li>
+          <li><a href="pages/artists.html">Artists</a></li>
+          <li><a href="#">Categories</a></li>
+          <li><a href="#">New Arrivals</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Artists</div>
+        <ul class="footer__links">
+          <li><a href="pages/register.html?role=artist">Sell on ArtBazaar</a></li>
+          <li><a href="#">Artist Resources</a></li>
+          <li><a href="#">Success Stories</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__heading">Support</div>
+        <ul class="footer__links">
+          <li><a href="#">Help Centre</a></li>
+          <li><a href="#">Shipping Info</a></li>
+          <li><a href="#">Return Policy</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2025 ArtBazaar. All rights reserved.</span>
+      <span>Made with ❤ for Indian Artists</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

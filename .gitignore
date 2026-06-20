@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+.venv/
+*.egg
+
+# Environment
+.env
+*.env.local
+
+# Uploads (don't commit user files)
+backend/uploads/
+
+# Database
+*.sqlite3
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Node (if using any tooling)
+node_modules/
+npm-debug.log*
+
+# Logs
+*.log
+logs/

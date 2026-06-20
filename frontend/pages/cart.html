@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart – ArtBazaar</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+    <div class="navbar__links"><a href="marketplace.html">← Continue Shopping</a></div>
+    <div class="navbar__actions" id="navActions"></div>
+  </div>
+</nav>
+
+<div class="page-hero"><div class="container">
+  <h1>Shopping Cart</h1>
+  <p class="text-muted">Review your selected artworks before checkout.</p>
+</div></div>
+
+<div class="container section-sm">
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;">
+    <!-- Cart Items -->
+    <div id="cartItems"></div>
+    <!-- Summary -->
+    <div style="background:var(--white);border-radius:var(--radius-lg);padding:28px;border:1px solid var(--border);position:sticky;top:90px;">
+      <h3 style="margin-bottom:20px;">Order Summary</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;" id="summaryLines"></div>
+      <div style="border-top:2px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;margin-bottom:24px;">
+        <span style="font-weight:700;font-size:1.1rem;">Total</span>
+        <span style="font-weight:700;font-size:1.2rem;color:var(--terracotta);" id="totalEl">₹0</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Shipping Address</label>
+        <textarea id="shippingAddr" class="form-textarea" rows="3" placeholder="Full address, City, PIN…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Order Notes (optional)</label>
+        <input type="text" id="orderNotes" class="form-input" placeholder="Any special instructions…"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="placeOrder()" id="checkoutBtn">Place Order</button>
+      <p style="font-size:0.78rem;color:var(--ink-soft);text-align:center;margin-top:12px;">Cash on delivery · No hidden fees</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/api.js"></script>
+<script>
+(function(){ const el=document.getElementById('navActions'); if(!el) return; if(Auth.isLoggedIn()){ const u=Auth.getUser(); el.innerHTML=`<a href="${u.role==='artist'?'artist-dashboard.html':'buyer-dashboard.html'}" class="btn btn-ghost btn-sm">Dashboard</a>`; } else { el.innerHTML=`<a href="login.html" class="btn btn-primary btn-sm">Sign In</a>`; } })();
+
+function renderCart() {
+  const items = Cart.get();
+  const cartEl = document.getElementById('cartItems');
+  if(!items.length){
+    cartEl.innerHTML=`<div style="text-align:center;padding:80px 20px;">
+      <div style="font-size:3rem;margin-bottom:16px;">🛒</div>
+      <h3 style="margin-bottom:8px;">Your cart is empty</h3>
+      <p class="text-muted" style="margin-bottom:24px;">Add some artworks to get started!</p>
+      <a href="marketplace.html" class="btn btn-primary">Browse Artworks</a>
+    </div>`;
+    document.getElementById('summaryLines').innerHTML='';
+    document.getElementById('totalEl').textContent='₹0';
+    return;
+  }
+  cartEl.innerHTML = items.map(i=>`
+    <div style="background:var(--white);border-radius:var(--radius-lg);padding:20px;border:1px solid var(--border);margin-bottom:16px;display:flex;gap:16px;align-items:center;">
+      <img src="${artworkImg(i.artwork?.image_urls,i.artwork?.title)}" style="width:80px;height:80px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0;"/>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--ink);margin-bottom:4px;">${i.artwork?.title}</div>
+        <div style="font-size:0.85rem;color:var(--ink-soft);">by ${i.artwork?.artist?.full_name||'Artist'}</div>
+        <div style="color:var(--terracotta);font-weight:600;margin-top:6px;">${formatPrice(i.artwork?.price)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="changeQty(${i.artwork_id},-1)">−</button>
+        <span style="font-weight:600;min-width:24px;text-align:center;">${i.quantity}</span>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="changeQty(${i.artwork_id},1)">+</button>
+      </div>
+      <div style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:right;">${formatPrice(i.artwork?.price*i.quantity)}</div>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="Cart.remove(${i.artwork_id});renderCart();" style="color:#dc2626;">✕</button>
+    </div>`).join('');
+
+  document.getElementById('summaryLines').innerHTML = items.map(i=>`
+    <div style="display:flex;justify-content:space-between;font-size:0.9rem;"><span>${i.artwork?.title} × ${i.quantity}</span><span>${formatPrice(i.artwork?.price*i.quantity)}</span></div>`).join('');
+  document.getElementById('totalEl').textContent = formatPrice(Cart.total());
+}
+
+function changeQty(id, delta) {
+  const items = Cart.get();
+  const item = items.find(i=>i.artwork_id===id);
+  if(!item) return;
+  item.quantity = Math.max(1, item.quantity+delta);
+  Cart.save(items);
+  renderCart();
+}
+
+async function placeOrder(){
+  if(!Auth.isLoggedIn()){ showToast('Please login to place an order','info'); return; }
+  const items = Cart.get();
+  if(!items.length){ showToast('Your cart is empty','info'); return; }
+  const btn = document.getElementById('checkoutBtn');
+  btn.innerHTML='<span class="spinner"></span> Placing…'; btn.disabled=true;
+  try {
+    await OrderAPI.placeOrder({
+      items: items.map(i=>({artwork_id:i.artwork_id,quantity:i.quantity})),
+      shipping_address: document.getElementById('shippingAddr').value.trim(),
+      notes: document.getElementById('orderNotes').value.trim(),
+    });
+    Cart.clear();
+    showToast('🎉 Order placed successfully!','success');
+    setTimeout(()=>window.location.href='buyer-dashboard.html',1200);
+  } catch(err){
+    showToast(err.message,'error');
+    btn.innerHTML='Place Order'; btn.disabled=false;
+  }
+}
+
+renderCart();
+</script>
+</body>
+</html>

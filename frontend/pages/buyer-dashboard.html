@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Account – ArtBazaar</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/dashboard.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+    <div class="navbar__actions">
+      <a href="marketplace.html" class="btn btn-ghost btn-sm">Browse Art</a>
+      <a href="cart.html" class="btn btn-primary btn-sm">🛒 Cart</a>
+      <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Sign Out</button>
+    </div>
+  </div>
+</nav>
+
+<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar__profile">
+      <div class="sidebar__avatar" id="sideAvatar">B</div>
+      <div class="sidebar__name"   id="sideName">Loading…</div>
+      <div class="sidebar__role">Collector</div>
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">My Collection</div>
+      <a href="#" class="sidebar__link active" onclick="showTab('orders',this)">📦 My Orders</a>
+      <a href="#" class="sidebar__link"        onclick="showTab('wishlist',this)">♥ Wishlist</a>
+      <a href="#" class="sidebar__link"        onclick="showTab('commissions',this)">✉ My Commissions</a>
+      <a href="#" class="sidebar__link"        onclick="showTab('recommendations',this)">✨ For You</a>
+      <div class="sidebar__section-title">Account</div>
+      <a href="#" class="sidebar__link"        onclick="showTab('profile',this)">👤 Profile</a>
+    </nav>
+  </aside>
+
+  <main class="dashboard__main">
+
+    <!-- Orders -->
+    <div id="tab-orders" class="tab-content">
+      <div class="dashboard__header"><div class="dashboard__title">My Orders</div><div class="dashboard__subtitle">Track all your purchases.</div></div>
+      <div id="myOrders"><div class="spinner" style="margin:40px auto;display:block;"></div></div>
+    </div>
+
+    <!-- Wishlist -->
+    <div id="tab-wishlist" class="tab-content" style="display:none;">
+      <div class="dashboard__header"><div class="dashboard__title">My Wishlist</div></div>
+      <div class="artwork-grid" id="wishlistGrid"></div>
+    </div>
+
+    <!-- Commissions -->
+    <div id="tab-commissions" class="tab-content" style="display:none;">
+      <div class="dashboard__header flex-between">
+        <div><div class="dashboard__title">My Commission Requests</div></div>
+        <a href="custom-order.html" class="btn btn-primary btn-sm">+ New Commission</a>
+      </div>
+      <div id="myCommissions"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div id="tab-recommendations" class="tab-content" style="display:none;">
+      <div class="dashboard__header">
+        <div class="dashboard__title">✨ Recommended for You</div>
+        <div class="dashboard__subtitle">Personalised AI picks based on your taste.</div>
+      </div>
+      <div class="artwork-grid" id="recGrid"></div>
+    </div>
+
+    <!-- Profile -->
+    <div id="tab-profile" class="tab-content" style="display:none;">
+      <div class="dashboard__header"><div class="dashboard__title">My Profile</div></div>
+      <div class="artwork-form">
+        <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="p_name" class="form-input"/></div>
+        <div class="form-group"><label class="form-label">Bio</label><textarea id="p_bio" class="form-textarea" rows="3"></textarea></div>
+        <div class="form-group"><label class="form-label">Location</label><input type="text" id="p_loc" class="form-input" placeholder="City, State"/></div>
+        <button class="btn btn-primary" onclick="updateProfile()">Save Changes</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/api.js"></script>
+<script>
+if (!Auth.isLoggedIn()) window.location.href = 'login.html';
+const user = Auth.getUser();
+document.getElementById('sideName').textContent  = user?.full_name || 'Collector';
+document.getElementById('sideAvatar').textContent = getInitials(user?.full_name || 'B');
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display='none');
+  document.querySelectorAll('.sidebar__link').forEach(l => l.classList.remove('active'));
+  document.getElementById('tab-'+name).style.display = 'block';
+  if(el) el.classList.add('active');
+  if(name==='orders')          loadOrders();
+  if(name==='wishlist')        loadWishlist();
+  if(name==='commissions')     loadCommissions();
+  if(name==='recommendations') loadRecommendations();
+  if(name==='profile')         loadProfile();
+}
+
+async function loadOrders() {
+  const el = document.getElementById('myOrders');
+  try {
+    const orders = await OrderAPI.myOrders();
+    if(!orders.length){ el.innerHTML='<p class="text-muted">No orders yet. <a href="marketplace.html" style="color:var(--terracotta);">Browse artworks →</a></p>'; return; }
+    el.innerHTML = orders.map(o => `<div class="order-card">
+      <div class="order-card__header">
+        <div><div class="order-card__id">Order #${o.id}</div><div class="order-card__date">${formatDate(o.created_at)}</div></div>
+        <span class="badge badge-${o.status}">${o.status}</span>
+      </div>
+      <div class="order-card__body"><div class="order-card__items">
+        ${(o.items||[]).map(i=>`<div class="order-item">
+          <img class="order-item__thumb" src="${artworkImg(i.artwork?.image_urls, i.artwork?.title)}" alt=""/>
+          <div><div class="order-item__name">${i.artwork?.title||'Artwork'}</div><div class="order-item__qty">Qty: ${i.quantity}</div></div>
+          <div class="order-item__price">${formatPrice(i.unit_price*i.quantity)}</div>
+        </div>`).join('')}
+      </div></div>
+      <div class="order-card__footer">
+        <div class="order-card__total">Total: ${formatPrice(o.total_amount)}</div>
+        ${o.status==='delivered'?`<a href="artwork-detail.html?id=${o.items[0]?.artwork_id}" class="btn btn-ghost btn-sm">Write Review</a>`:''}
+      </div>
+    </div>`).join('');
+  } catch(err){ el.innerHTML='<p class="text-muted">Failed to load orders.</p>'; }
+}
+
+async function loadWishlist() {
+  const grid = document.getElementById('wishlistGrid');
+  try {
+    const items = await OrderAPI.myWishlist();
+    if(!items.length){ grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;"><div style="font-size:3rem;margin-bottom:16px;">♡</div><h3>Your wishlist is empty</h3><p class="text-muted">Heart artworks you love to save them here.</p></div>'; return; }
+    grid.innerHTML = items.map(w=>`<div class="artwork-card" onclick="window.location.href='artwork-detail.html?id=${w.artwork_id}'">
+      <div class="artwork-card__image-wrap">
+        <img src="${artworkImg(w.artwork?.image_urls,w.artwork?.title)}" alt="${w.artwork?.title}" loading="lazy"/>
+        <button class="artwork-card__wishlist active" data-id="${w.artwork_id}" onclick="removeWish(event,${w.artwork_id},this)">♥</button>
+      </div>
+      <div class="artwork-card__body">
+        <div class="artwork-card__category">${w.artwork?.category}</div>
+        <div class="artwork-card__title">${w.artwork?.title}</div>
+        <div class="artwork-card__footer">
+          <div class="artwork-card__price">${formatPrice(w.artwork?.price)}</div>
+          <button class="btn btn-primary btn-sm" onclick="addToCartFromWish(event,${JSON.stringify(w.artwork).replace(/"/g,'&quot;')})">Add to Cart</button>
+        </div>
+      </div>
+    </div>`).join('');
+  } catch(err){ grid.innerHTML='<p class="text-muted">Failed to load wishlist.</p>'; }
+}
+
+async function removeWish(e,id,btn){ e.stopPropagation(); try{ await ArtworkAPI.removeWishlist(id); showToast('Removed from wishlist'); loadWishlist(); }catch(err){ showToast(err.message,'error'); } }
+function addToCartFromWish(e,artwork){ e.stopPropagation(); Cart.add(artwork); }
+
+async function loadCommissions() {
+  const el = document.getElementById('myCommissions');
+  try {
+    const list = await CommissionAPI.myOrders();
+    if(!list.length){ el.innerHTML='<p class="text-muted">No commissions yet. <a href="custom-order.html" style="color:var(--terracotta);">Request one →</a></p>'; return; }
+    el.innerHTML = list.map(c=>`<div class="commission-card">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;">
+        <div>
+          <div class="commission-card__title">${c.title}</div>
+          <div class="commission-card__meta">
+            <span>🎨 ${c.artist?.full_name}</span>
+            ${c.budget?`<span>💰 ${formatPrice(c.budget)}</span>`:''}
+            ${c.agreed_price?`<span>✅ Agreed: ${formatPrice(c.agreed_price)}</span>`:''}
+          </div>
+          <p style="font-size:0.9rem;color:var(--ink-mid);line-height:1.7;">${c.description}</p>
+          ${c.artist_notes?`<div style="background:var(--cream-dark);border-radius:var(--radius-md);padding:12px;margin-top:10px;font-size:0.875rem;"><strong>Artist note:</strong> ${c.artist_notes}</div>`:''}
+        </div>
+        <span class="badge badge-${c.status==='pending'?'pending':c.status==='accepted'||c.status==='in_progress'?'confirmed':'delivered'}">${c.status.replace('_',' ')}</span>
+      </div>
+    </div>`).join('');
+  } catch(err){ el.innerHTML='<p class="text-muted">Failed to load commissions.</p>'; }
+}
+
+async function loadRecommendations() {
+  const grid = document.getElementById('recGrid');
+  grid.innerHTML = Array(6).fill('<div class="artwork-card"><div class="skeleton" style="height:200px;"></div><div style="padding:16px"><div class="skeleton" style="height:14px;margin-bottom:8px;"></div><div class="skeleton" style="height:12px;width:60%;"></div></div></div>').join('');
+  try {
+    const artworks = await AIAPI.recommendations();
+    if(!artworks.length){ grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;"><p class="text-muted">Browse some artworks to get personalised recommendations!</p></div>'; return; }
+    grid.innerHTML = artworks.map(a=>`<div class="artwork-card" onclick="window.location.href='artwork-detail.html?id=${a.id}'">
+      <div class="artwork-card__image-wrap">
+        <img src="${artworkImg(a.image_urls,a.title)}" alt="${a.title}" loading="lazy"/>
+        <span class="artwork-card__badge" style="background:var(--amber);color:var(--ink);">For You ✨</span>
+      </div>
+      <div class="artwork-card__body">
+        <div class="artwork-card__category">${a.category}</div>
+        <div class="artwork-card__title">${a.title}</div>
+        <div class="artwork-card__artist">by ${a.artist?.full_name}</div>
+        <div class="artwork-card__footer">
+          <div class="artwork-card__price">${formatPrice(a.price)}</div>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();Cart.add(${JSON.stringify(a).replace(/"/g,'&quot;')})">Add to Cart</button>
+        </div>
+      </div>
+    </div>`).join('');
+  } catch(err){ grid.innerHTML='<p class="text-muted">Could not load recommendations.</p>'; }
+}
+
+function loadProfile(){ const u=Auth.getUser(); document.getElementById('p_name').value=u?.full_name||''; document.getElementById('p_bio').value=u?.bio||''; document.getElementById('p_loc').value=u?.location||''; }
+async function updateProfile(){ try{ const u=await AuthAPI.updateMe({full_name:document.getElementById('p_name').value.trim(),bio:document.getElementById('p_bio').value.trim(),location:document.getElementById('p_loc').value.trim()}); Auth.setUser({...Auth.getUser(),...u}); document.getElementById('sideName').textContent=u.full_name; showToast('Profile updated!','success'); }catch(err){ showToast(err.message,'error'); } }
+
+showTab('orders', document.querySelector('.sidebar__link'));
+</script>
+</body>
+</html>

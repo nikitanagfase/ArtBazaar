@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketplace – ArtBazaar</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .marketplace-layout { display: grid; grid-template-columns: 270px 1fr; gap: 32px; padding-top: 32px; }
+    .sidebar-filters { position: sticky; top: 90px; align-self: start; background: var(--white); border-radius: var(--radius-lg); padding: 28px; border: 1px solid var(--border); }
+    .filter-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .filter-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .filter-section__title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 14px; }
+    .filter-option { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; font-size: 0.9rem; color: var(--ink-mid); }
+    .filter-option input[type="checkbox"] { accent-color: var(--terracotta); width: 16px; height: 16px; }
+    .filter-option:hover { color: var(--terracotta); }
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    @media (max-width: 900px) { .marketplace-layout { grid-template-columns: 1fr; } .sidebar-filters { display: none; } }
+    .img-search-btn { background: linear-gradient(135deg,var(--terracotta),var(--terra-dark)); color: white; border: none; border-radius: var(--radius-md); padding: 12px 18px; font-size: 0.9rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all var(--transition); }
+    .img-search-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,98,42,0.35); }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+    <div class="navbar__links">
+      <a href="../index.html">Home</a>
+      <a href="marketplace.html" class="active">Marketplace</a>
+      <a href="artists.html">Artists</a>
+    </div>
+    <div class="navbar__search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search artworks…" id="searchInput" />
+    </div>
+    <div class="navbar__actions" id="navActions"></div>
+  </div>
+</nav>
+
+<!-- Page Hero -->
+<div class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span class="breadcrumb__sep">/</span><span>Marketplace</span></div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <h1 style="font-size:2.2rem;margin-bottom:8px;">Explore the Marketplace</h1>
+        <p class="text-muted">Discover unique, handmade artworks from independent creators across India.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <label for="imageSearchInput" class="img-search-btn">
+          <span>🔍</span> Search by Image
+        </label>
+        <input type="file" id="imageSearchInput" accept="image/*" style="display:none;" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="container section-sm">
+  <!-- Category chips -->
+  <div class="filter-bar" id="categoryChips">
+    <span class="filter-chip active" data-cat="">All</span>
+    <span class="filter-chip" data-cat="painting">Paintings</span>
+    <span class="filter-chip" data-cat="sculpture">Sculptures</span>
+    <span class="filter-chip" data-cat="photography">Photography</span>
+    <span class="filter-chip" data-cat="digital">Digital</span>
+    <span class="filter-chip" data-cat="textile">Textile</span>
+    <span class="filter-chip" data-cat="ceramics">Ceramics</span>
+    <span class="filter-chip" data-cat="jewellery">Jewellery</span>
+  </div>
+
+  <div class="marketplace-layout">
+    <!-- Sidebar Filters -->
+    <aside class="sidebar-filters">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;margin-bottom:20px;">Filters</div>
+
+      <div class="filter-section">
+        <div class="filter-section__title">Sort By</div>
+        <select id="sortSelect" class="form-select" style="font-size:0.875rem;">
+          <option value="created_at|desc">Newest First</option>
+          <option value="created_at|asc">Oldest First</option>
+          <option value="price|asc">Price: Low to High</option>
+          <option value="price|desc">Price: High to Low</option>
+          <option value="views|desc">Most Popular</option>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-section__title">Price Range</div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:8px;">
+          <span>₹<span id="minLabel">0</span></span>
+          <span>₹<span id="maxLabel">50000</span></span>
+        </div>
+        <input type="range" id="minPrice" min="0" max="50000" step="500" value="0" style="margin-bottom:8px;" />
+        <input type="range" id="maxPrice" min="0" max="50000" step="500" value="50000" />
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-section__title">Medium</div>
+        <div id="mediumFilters">
+          <label class="filter-option"><input type="checkbox" value="oil" /> Oil Paint</label>
+          <label class="filter-option"><input type="checkbox" value="acrylic" /> Acrylic</label>
+          <label class="filter-option"><input type="checkbox" value="watercolour" /> Watercolour</label>
+          <label class="filter-option"><input type="checkbox" value="charcoal" /> Charcoal</label>
+          <label class="filter-option"><input type="checkbox" value="mixed" /> Mixed Media</label>
+        </div>
+      </div>
+
+      <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="clearFilters()">Clear All Filters</button>
+    </aside>
+
+    <!-- Main Grid -->
+    <div>
+      <div class="results-header">
+        <div style="font-size:0.9rem;color:var(--ink-soft);">Showing <strong id="resultCount">…</strong> artworks</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" id="gridViewBtn" title="Grid view">⊞</button>
+          <button class="btn btn-ghost btn-sm" id="listViewBtn" title="List view">☰</button>
+        </div>
+      </div>
+
+      <!-- Image Search Results Banner -->
+      <div id="imgSearchBanner" style="display:none;background:rgba(200,98,42,0.06);border:1px solid rgba(200,98,42,0.2);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:20px;display:none;align-items:center;justify-content:space-between;gap:12px;">
+        <span style="font-size:0.9rem;color:var(--ink-mid);">🔍 Showing visually similar artworks</span>
+        <button class="btn btn-ghost btn-sm" onclick="clearImageSearch()">✕ Clear</button>
+      </div>
+
+      <div class="artwork-grid" id="artworkGrid"></div>
+      <!-- Load More -->
+      <div style="text-align:center;margin-top:40px;" id="loadMoreWrap">
+        <button class="btn btn-outline" id="loadMoreBtn" onclick="loadMore()">Load More Artworks</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" style="margin-top:60px;">
+  <div class="container">
+    <div class="footer__bottom">
+      <span>© 2025 ArtBazaar. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/api.js"></script>
+<script src="../js/marketplace.js"></script>
+</body>
+</html>

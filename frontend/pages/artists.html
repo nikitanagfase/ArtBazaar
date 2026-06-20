@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Artists – ArtBazaar</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .artists-hero {
+      background: linear-gradient(135deg, var(--cream-dark) 0%, var(--amber-light) 100%);
+      padding: 120px 0 60px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .artists-hero__eyebrow {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--terracotta);
+      margin-bottom: 12px;
+    }
+    .artists-hero__title { margin-bottom: 16px; }
+    .artists-hero__sub {
+      font-size: 1rem;
+      color: var(--ink-soft);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .artists-section { padding: 60px 0; }
+    .artists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 28px;
+    }
+    .artist-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 32px 24px;
+      text-align: center;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+    .artist-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-5px);
+      border-color: rgba(200,98,42,0.3);
+    }
+    .artist-card__avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 auto 16px;
+      border: 3px solid var(--amber-light);
+      overflow: hidden;
+    }
+    .artist-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .artist-card__name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .artist-card__location { font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 12px; }
+    .artist-card__bio {
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .artist-card__stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .artist-card__stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--terracotta);
+    }
+    .artist-card__stat-label {
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .empty-state { text-align: center; padding: 80px 20px; color: var(--ink-soft); }
+    .empty-state__icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state__title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .skeleton-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .skeleton-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; }
+    .skeleton-line { border-radius: var(--radius-sm); margin: 8px auto; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+    <div class="navbar__links">
+      <a href="../index.html">Home</a>
+      <a href="marketplace.html">Marketplace</a>
+      <a href="artists.html" class="active">Artists</a>
+    </div>
+    <div class="navbar__actions" id="navActions"></div>
+  </div>
+</nav>
+
+<section class="artists-hero">
+  <div class="container">
+    <div class="artists-hero__eyebrow">Our Creative Community</div>
+    <h1 class="artists-hero__title">Meet the Artists</h1>
+    <p class="artists-hero__sub">Independent creators crafting one-of-a-kind handmade art across India.</p>
+  </div>
+</section>
+
+<section class="artists-section">
+  <div class="container">
+    <div class="artists-grid" id="artistsGrid">
+      <div class="skeleton-card"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-line" style="height:18px;width:60%;"></div><div class="skeleton skeleton-line" style="height:12px;width:40%;"></div><div class="skeleton skeleton-line" style="height:12px;width:80%;"></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-line" style="height:18px;width:60%;"></div><div class="skeleton skeleton-line" style="height:12px;width:40%;"></div><div class="skeleton skeleton-line" style="height:12px;width:80%;"></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-line" style="height:18px;width:60%;"></div><div class="skeleton skeleton-line" style="height:12px;width:40%;"></div><div class="skeleton skeleton-line" style="height:12px;width:80%;"></div></div>
+    </div>
+  </div>
+</section>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/api.js"></script>
+<script>
+  function renderNav() {
+    const nav = document.getElementById('navActions');
+    if (Auth.isLoggedIn()) {
+      const user = Auth.getUser();
+      const dashboard = Auth.isArtist() ? 'artist-dashboard.html' : 'buyer-dashboard.html';
+      nav.innerHTML = `
+        <a href="${dashboard}" class="btn btn-ghost btn-sm">Dashboard</a>
+        <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Sign Out</button>`;
+    } else {
+      nav.innerHTML = `
+        <a href="login.html" class="btn btn-ghost btn-sm">Sign In</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Join Free</a>`;
+    }
+  }
+
+  async function loadArtists() {
+    const grid = document.getElementById('artistsGrid');
+    try {
+      const data = await apiFetch('/api/auth/artists');
+      const artists = Array.isArray(data) ? data : (data.artists || data.items || []);
+
+      if (!artists.length) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <div class="empty-state__icon">🎨</div>
+            <div class="empty-state__title">No artists yet</div>
+            <p>Be the first to join as an artist!</p>
+            <a href="register.html" class="btn btn-primary" style="margin-top:16px;">Join as Artist</a>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = artists.map(a => `
+        <div class="artist-card" onclick="window.location.href='marketplace.html?artist=${a.id}'">
+          <div class="artist-card__avatar">
+            ${a.profile_image
+              ? `<img src="${API_BASE}${a.profile_image}" alt="${a.full_name}">`
+              : getInitials(a.full_name)}
+          </div>
+          <div class="artist-card__name">${a.full_name}</div>
+          ${a.location ? `<div class="artist-card__location">📍 ${a.location}</div>` : ''}
+          <div class="artist-card__bio">${a.bio || 'No bio yet'}</div>
+          <div class="artist-card__stats">
+            <div>
+              <div class="artist-card__stat-num">${a.artwork_count ?? 0}</div>
+              <div class="artist-card__stat-label">Artworks</div>
+            </div>
+            <div>
+              <div class="artist-card__stat-num">${a.order_count ?? 0}</div>
+              <div class="artist-card__stat-label">Sales</div>
+            </div>
+          </div>
+        </div>`).join('');
+
+    } catch (err) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-state__icon">⚠️</div>
+          <div class="empty-state__title">Could not load artists</div>
+          <p style="margin-bottom:16px;">${err.message}</p>
+          <button class="btn btn-outline" onclick="loadArtists()">Try Again</button>
+        </div>`;
+    }
+  }
+
+  renderNav();
+  loadArtists();
+</script>
+</body>
+</html>

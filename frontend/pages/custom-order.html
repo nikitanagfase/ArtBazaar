@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Request a Commission – ArtBazaar</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+    <div class="navbar__links"><a href="marketplace.html">← Browse Artists</a></div>
+    <div class="navbar__actions"><button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Sign Out</button></div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <h1>Request a Custom Commission</h1>
+    <p class="text-muted">Describe your vision and the artist will craft it just for you.</p>
+  </div>
+</div>
+
+<div class="container section-sm" style="max-width:760px;">
+  <div style="background:var(--white);border-radius:var(--radius-xl);padding:44px;border:1px solid var(--border);">
+
+    <div id="artistInfo" style="background:var(--cream-dark);border-radius:var(--radius-lg);padding:20px;margin-bottom:32px;display:flex;align-items:center;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:600;" id="artistAvatar">A</div>
+      <div>
+        <div style="font-weight:600;color:var(--ink);" id="artistNameEl">Select an artist</div>
+        <div style="font-size:0.85rem;color:var(--ink-soft);">Commission this artist for your custom artwork</div>
+      </div>
+    </div>
+
+    <form id="commissionForm">
+      <input type="hidden" id="artist_id" />
+
+      <div class="form-group">
+        <label class="form-label">Commission Title *</label>
+        <input type="text" id="co_title" class="form-input" placeholder="e.g. Family portrait in watercolour style" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description * <span class="form-hint">(be as detailed as possible)</span></label>
+        <textarea id="co_desc" class="form-textarea" rows="6" placeholder="Describe what you'd like created — size, colours, subject, style, mood, any specific elements…" required></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Your Budget (₹)</label>
+          <input type="number" id="co_budget" class="form-input" placeholder="5000" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deadline</label>
+          <input type="date" id="co_deadline" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reference Images <span class="form-hint">(optional, up to 4)</span></label>
+        <div class="upload-zone" onclick="document.getElementById('refFiles').click()">
+          <div class="upload-zone__icon">📎</div>
+          <div class="upload-zone__text">Upload reference images for inspiration — <span class="upload-zone__cta">browse</span></div>
+        </div>
+        <input type="file" id="refFiles" accept="image/*" multiple style="display:none;" />
+        <div class="image-preview-grid" id="refPreview"></div>
+      </div>
+
+      <div id="coError" style="color:#dc2626;font-size:0.85rem;margin-bottom:16px;display:none;"></div>
+
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-primary btn-lg" id="coBtn">Send Commission Request</button>
+        <a href="marketplace.html" class="btn btn-ghost btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/api.js"></script>
+<script>
+if(!Auth.isLoggedIn()){ window.location.href='login.html'; }
+
+const params = new URLSearchParams(window.location.search);
+const preArtistId   = params.get('artist_id');
+const preArtistName = params.get('artist_name');
+
+if(preArtistId){
+  document.getElementById('artist_id').value = preArtistId;
+  document.getElementById('artistNameEl').textContent = preArtistName || 'Artist #'+preArtistId;
+  document.getElementById('artistAvatar').textContent = getInitials(preArtistName||'A');
+}
+
+// Set min date to today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('co_deadline').min = today;
+
+// Reference images preview
+let refFiles = [];
+document.getElementById('refFiles').addEventListener('change', (e) => {
+  refFiles = Array.from(e.target.files).slice(0,4);
+  document.getElementById('refPreview').innerHTML = refFiles.map((f,i)=>{
+    const url = URL.createObjectURL(f);
+    return `<div class="image-preview-item"><img src="${url}"/><button type="button" class="image-preview-item__remove" onclick="refFiles.splice(${i},1);document.getElementById('refFiles').dispatchEvent(new Event('change'))">✕</button></div>`;
+  }).join('');
+});
+
+document.getElementById('commissionForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const artistId = document.getElementById('artist_id').value;
+  if(!artistId){ showToast('Please select an artist','info'); return; }
+  const errEl = document.getElementById('coError');
+  const btn   = document.getElementById('coBtn');
+  errEl.style.display = 'none';
+  btn.innerHTML = '<span class="spinner"></span> Sending…'; btn.disabled=true;
+
+  try {
+    const deadline = document.getElementById('co_deadline').value;
+    const co = await CommissionAPI.create({
+      artist_id:   parseInt(artistId),
+      title:       document.getElementById('co_title').value.trim(),
+      description: document.getElementById('co_desc').value.trim(),
+      budget:      parseFloat(document.getElementById('co_budget').value)||null,
+      deadline:    deadline ? new Date(deadline).toISOString() : null,
+    });
+
+    // Upload reference images if any
+    if(refFiles.length){
+      const fd = new FormData();
+      refFiles.forEach(f => fd.append('files', f));
+      await CommissionAPI.uploadRefs(co.id, fd);
+    }
+
+    showToast('Commission request sent! 🎨','success');
+    setTimeout(()=>window.location.href='buyer-dashboard.html',1200);
+  } catch(err){
+    errEl.textContent = err.message;
+    errEl.style.display='block';
+    btn.innerHTML='Send Commission Request'; btn.disabled=false;
+  }
+});
+</script>
+</body>
+</html>

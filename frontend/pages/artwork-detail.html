@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Artwork – ArtBazaar</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <style>
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:52px; align-items:start; padding-top:40px; }
+    .thumb-row   { display:flex; gap:10px; margin-top:12px; }
+    .thumb       { width:72px; height:72px; border-radius:var(--radius-sm); overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color var(--transition); }
+    .thumb img   { width:100%; height:100%; object-fit:cover; }
+    .thumb.active { border-color:var(--terracotta); }
+    .main-img    { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:var(--radius-xl); }
+    .info-section { margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+    .info-section:last-child { border-bottom:none; }
+    @media(max-width:768px){ .detail-grid{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__logo">Art<span>Bazaar</span></a>
+    <div class="navbar__links"><a href="marketplace.html">← Back to Marketplace</a></div>
+    <div class="navbar__actions" id="navActions"></div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:80px;">
+  <div id="detailWrap">
+    <!-- Skeleton -->
+    <div class="detail-grid">
+      <div><div class="skeleton" style="aspect-ratio:4/3;border-radius:var(--radius-xl);"></div></div>
+      <div>
+        <div class="skeleton" style="height:14px;width:30%;margin-bottom:16px;"></div>
+        <div class="skeleton" style="height:36px;margin-bottom:12px;"></div>
+        <div class="skeleton" style="height:16px;width:50%;margin-bottom:32px;"></div>
+        <div class="skeleton" style="height:80px;margin-bottom:24px;"></div>
+        <div class="skeleton" style="height:48px;border-radius:50px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/api.js"></script>
+<script>
+  // Navbar
+  (function(){
+    const el = document.getElementById('navActions');
+    if (!el) return;
+    if (Auth.isLoggedIn()) {
+      const user = Auth.getUser();
+      const dash = user?.role === 'artist' ? 'artist-dashboard.html' : 'buyer-dashboard.html';
+      el.innerHTML = `<a href="cart.html" class="btn btn-ghost btn-sm">🛒 Cart</a><a href="${dash}" class="btn btn-ghost btn-sm">Dashboard</a>`;
+    } else {
+      el.innerHTML = `<a href="login.html" class="btn btn-ghost btn-sm">Sign In</a><a href="register.html" class="btn btn-primary btn-sm">Join Free</a>`;
+    }
+  })();
+
+  const artworkId = new URLSearchParams(window.location.search).get('id');
+  if (!artworkId) window.location.href = 'marketplace.html';
+
+  let currentArtwork = null;
+
+  async function loadDetail() {
+    try {
+      const a = await ArtworkAPI.get(artworkId);
+      currentArtwork = a;
+      document.title = `${a.title} – ArtBazaar`;
+
+      const reviews = await ArtworkAPI.getReviews(artworkId);
+      const avgRating = reviews.length ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : null;
+
+      document.getElementById('detailWrap').innerHTML = `
+        <div class="breadcrumb"><a href="../index.html">Home</a><span class="breadcrumb__sep">/</span><a href="marketplace.html">Marketplace</a><span class="breadcrumb__sep">/</span><span>${a.title}</span></div>
+        <div class="detail-grid" style="margin-top:20px;">
+          <!-- Left: Images -->
+          <div>
+            <img id="mainImg" class="main-img" src="${artworkImg(a.image_urls, a.title)}" alt="${a.title}" />
+            ${a.image_urls?.length > 1 ? `<div class="thumb-row">${a.image_urls.map((url,i)=>`<div class="thumb ${i===0?'active':''}" onclick="switchImg(this,'${API_BASE}${url}')"><img src="${API_BASE}${url}" alt=""/></div>`).join('')}</div>` : ''}
+          </div>
+
+          <!-- Right: Info -->
+          <div>
+            <div class="info-section">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <span class="tag tag-terra">${a.category}</span>
+                ${a.is_available ? '<span class="badge badge-delivered">In Stock</span>' : '<span class="badge badge-cancelled">Sold Out</span>'}
+              </div>
+              <h1 style="font-size:2rem;margin-bottom:10px;">${a.title}</h1>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <a href="artist-profile.html?id=${a.artist_id}" style="display:flex;align-items:center;gap:8px;color:var(--ink-mid);">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:600;">${getInitials(a.artist?.full_name)}</div>
+                  <span style="font-weight:500;font-size:0.95rem;">${a.artist?.full_name}</span>
+                </a>
+                ${avgRating ? `<span style="color:var(--amber);">★ ${avgRating}</span><span style="color:var(--ink-soft);font-size:0.85rem;">(${reviews.length} reviews)</span>` : ''}
+              </div>
+              <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--terracotta);margin-bottom:8px;">${formatPrice(a.price)}</div>
+              <div style="font-size:0.85rem;color:var(--ink-soft);">👁 ${a.view_count} views</div>
+            </div>
+
+            ${a.description ? `<div class="info-section"><p style="line-height:1.8;color:var(--ink-mid);">${a.description}</p></div>` : ''}
+
+            <div class="info-section">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                ${a.medium ? `<div><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-bottom:4px;">Medium</div><div style="font-weight:500;">${a.medium}</div></div>` : ''}
+                ${a.dimensions ? `<div><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-bottom:4px;">Dimensions</div><div style="font-weight:500;">${a.dimensions}</div></div>` : ''}
+                <div><div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-bottom:4px;">Stock</div><div style="font-weight:500;">${a.stock} available</div></div>
+              </div>
+            </div>
+
+            ${a.tags?.length ? `<div class="info-section"><div style="display:flex;flex-wrap:wrap;gap:8px;">${a.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>` : ''}
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+              ${a.is_available ? `
+                <button class="btn btn-primary btn-lg" onclick="addToCart()">🛒 Add to Cart</button>
+                <button class="btn btn-amber" onclick="buyNow()">Buy Now</button>
+              ` : `<button class="btn btn-ghost btn-lg" disabled style="opacity:0.5;">Sold Out</button>`}
+              <button class="btn btn-ghost" id="wishBtn" onclick="toggleWishlist()">♡ Save</button>
+            </div>
+
+            <a href="custom-order.html?artist_id=${a.artist_id}&artist_name=${encodeURIComponent(a.artist?.full_name)}" class="btn btn-outline" style="width:100%;justify-content:center;">
+              ✉ Request a Custom Commission from this Artist
+            </a>
+          </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div style="margin-top:60px;padding-top:40px;border-top:1px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+            <h2>Reviews ${reviews.length ? `<span style="font-size:1rem;color:var(--ink-soft);font-family:'DM Sans',sans-serif;">(${reviews.length})</span>` : ''}</h2>
+            ${Auth.isLoggedIn() && Auth.isBuyer() ? `<button class="btn btn-outline btn-sm" onclick="document.getElementById('reviewForm').scrollIntoView({behavior:'smooth'})">Write a Review</button>` : ''}
+          </div>
+
+          ${reviews.length ? `<div style="display:flex;flex-direction:column;gap:20px;">${reviews.map(r=>`
+            <div style="background:var(--white);border-radius:var(--radius-lg);padding:24px;border:1px solid var(--border);">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="width:40px;height:40px;border-radius:50%;background:var(--terracotta);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;">${getInitials(r.reviewer?.full_name)}</div>
+                <div>
+                  <div style="font-weight:600;color:var(--ink);">${r.reviewer?.full_name}</div>
+                  <div style="color:var(--amber);">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+                </div>
+                <div style="margin-left:auto;font-size:0.8rem;color:var(--ink-soft);">${formatDate(r.created_at)}</div>
+              </div>
+              ${r.comment ? `<p style="color:var(--ink-mid);line-height:1.7;">${r.comment}</p>` : ''}
+            </div>`).join('')}</div>` : `<p style="color:var(--ink-soft);">No reviews yet. Be the first to share your experience!</p>`}
+
+          <!-- Review Form -->
+          ${Auth.isLoggedIn() && Auth.isBuyer() ? `
+          <div id="reviewForm" style="margin-top:40px;background:var(--white);border-radius:var(--radius-lg);padding:28px;border:1px solid var(--border);">
+            <h3 style="margin-bottom:20px;">Write Your Review</h3>
+            <div class="form-group">
+              <label class="form-label">Rating</label>
+              <div class="star-rating" id="starRating">
+                ${[1,2,3,4,5].map(n=>`<span class="star" data-val="${n}">★</span>`).join('')}
+              </div>
+              <input type="hidden" id="ratingVal" value="0"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Comment (optional)</label>
+              <textarea class="form-textarea" id="reviewComment" placeholder="Share your experience with this artwork…"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+          </div>` : ''}
+        </div>
+      `;
+
+      // Star rating interaction
+      const stars = document.querySelectorAll('.star-rating .star');
+      stars.forEach(s => {
+        s.addEventListener('click', () => {
+          const val = +s.dataset.val;
+          document.getElementById('ratingVal').value = val;
+          stars.forEach((st, i) => st.classList.toggle('active', i < val));
+        });
+        s.addEventListener('mouseenter', () => {
+          const val = +s.dataset.val;
+          stars.forEach((st, i) => st.classList.toggle('hovered', i < val));
+        });
+        s.addEventListener('mouseleave', () => stars.forEach(st => st.classList.remove('hovered')));
+      });
+
+    } catch(err) {
+      document.getElementById('detailWrap').innerHTML = `<div style="text-align:center;padding:60px;color:var(--ink-soft);">Could not load artwork. <a href="marketplace.html" style="color:var(--terracotta);">← Go back</a></div>`;
+    }
+  }
+
+  function switchImg(el, url) {
+    document.getElementById('mainImg').src = url;
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function addToCart() {
+    if (!Auth.isLoggedIn()) { showToast('Please login to add to cart','info'); return; }
+    Cart.add(currentArtwork);
+  }
+
+  function buyNow() {
+    addToCart();
+    setTimeout(() => window.location.href = 'cart.html', 600);
+  }
+
+  async function toggleWishlist() {
+    if (!Auth.isLoggedIn()) { showToast('Please login to wishlist','info'); return; }
+    const btn = document.getElementById('wishBtn');
+    try {
+      if (btn.dataset.wishlisted === '1') {
+        await ArtworkAPI.removeWishlist(artworkId);
+        btn.textContent = '♡ Save'; btn.dataset.wishlisted = '0';
+      } else {
+        await ArtworkAPI.addWishlist(artworkId);
+        btn.textContent = '♥ Saved'; btn.dataset.wishlisted = '1';
+        showToast('Saved to wishlist!','success');
+      }
+    } catch(err) { showToast(err.message,'error'); }
+  }
+
+  async function submitReview() {
+    const rating = +document.getElementById('ratingVal').value;
+    if (!rating) { showToast('Please select a star rating','info'); return; }
+    try {
+      await ArtworkAPI.addReview(artworkId, { rating, comment: document.getElementById('reviewComment').value.trim() });
+      showToast('Review submitted!','success');
+      setTimeout(() => loadDetail(), 800);
+    } catch(err) { showToast(err.message,'error'); }
+  }
+
+  loadDetail();
+</script>
+</body>
+</html>
