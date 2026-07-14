@@ -61,63 +61,63 @@ async function apiFetch(path, options = {}) {
 
 // ── Auth API ────────────────────────────────────────────────────────────────
 const AuthAPI = {
-  register: (payload) => apiFetch('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
-  login:    (payload) => apiFetch('/api/auth/login',    { method: 'POST', body: JSON.stringify(payload) }),
-  getMe:    ()        => apiFetch('/api/auth/me'),
-  updateMe: (payload) => apiFetch('/api/auth/me', { method: 'PUT', body: JSON.stringify(payload) }),
-  getNotifications: () => apiFetch('/api/auth/me/notifications'),
-  markNotifRead: (id) => apiFetch(`/api/auth/me/notifications/${id}/read`, { method: 'PUT' }),
+  register: (payload) => apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+  login:    (payload) => apiFetch('/auth/login',    { method: 'POST', body: JSON.stringify(payload) }),
+  getMe:    ()        => apiFetch('/auth/me'),
+  updateMe: (payload) => apiFetch('/auth/me', { method: 'PUT', body: JSON.stringify(payload) }),
+  getNotifications: () => apiFetch('/auth/me/notifications'),
+  markNotifRead: (id) => apiFetch(`/auth/me/notifications/${id}/read`, { method: 'PUT' }),
 };
 
 // ── Artwork API ─────────────────────────────────────────────────────────────
 const ArtworkAPI = {
   list: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
-    return apiFetch(`/api/artworks${qs ? '?' + qs : ''}`);
+    return apiFetch(`/artworks${qs ? '?' + qs : ''}`);
   },
-  featured:   () => apiFetch('/api/artworks/featured'),
-  get:        (id) => apiFetch(`/api/artworks/${id}`),
-  create:     (payload) => apiFetch('/api/artworks', { method: 'POST', body: JSON.stringify(payload) }),
-  update:     (id, payload) => apiFetch(`/api/artworks/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-  delete:     (id) => apiFetch(`/api/artworks/${id}`, { method: 'DELETE' }),
-  uploadImages: (id, formData) => apiFetch(`/api/artworks/${id}/images`, { method: 'POST', body: formData }),
-  deleteImage:  (id, idx)    => apiFetch(`/api/artworks/${id}/images/${idx}`, { method: 'DELETE' }),
-  getReviews:   (id)         => apiFetch(`/api/artworks/${id}/reviews`),
-  addReview:    (id, payload)=> apiFetch(`/api/artworks/${id}/reviews`, { method: 'POST', body: JSON.stringify(payload) }),
-  addWishlist:  (id)         => apiFetch(`/api/artworks/${id}/wishlist`, { method: 'POST' }),
-  removeWishlist:(id)        => apiFetch(`/api/artworks/${id}/wishlist`, { method: 'DELETE' }),
+  featured:   () => apiFetch('/artworks/featured'),
+  get:        (id) => apiFetch(`/artworks/${id}`),
+  create:     (payload) => apiFetch('/artworks', { method: 'POST', body: JSON.stringify(payload) }),
+  update:     (id, payload) => apiFetch(`/artworks/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  delete:     (id) => apiFetch(`/artworks/${id}`, { method: 'DELETE' }),
+  uploadImages: (id, formData) => apiFetch(`/artworks/${id}/images`, { method: 'POST', body: formData }),
+  deleteImage:  (id, idx)    => apiFetch(`/artworks/${id}/images/${idx}`, { method: 'DELETE' }),
+  getReviews:   (id)         => apiFetch(`/artworks/${id}/reviews`),
+  addReview:    (id, payload)=> apiFetch(`/artworks/${id}/reviews`, { method: 'POST', body: JSON.stringify(payload) }),
+  addWishlist:  (id)         => apiFetch(`/artworks/${id}/wishlist`, { method: 'POST' }),
+  removeWishlist:(id)        => apiFetch(`/artworks/${id}/wishlist`, { method: 'DELETE' }),
 };
 
 // ── Order API ───────────────────────────────────────────────────────────────
 const OrderAPI = {
-  placeOrder:    (payload)     => apiFetch('/api/orders',            { method: 'POST', body: JSON.stringify(payload) }),
-  myOrders:      ()            => apiFetch('/api/orders/my'),
-  myWishlist:    ()            => apiFetch('/api/orders/my/wishlist'),
-  incomingOrders:()            => apiFetch('/api/orders/incoming'),
-  getOrder:      (id)          => apiFetch(`/api/orders/${id}`),
-  updateStatus:  (id, status)  => apiFetch(`/api/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  placeOrder:    (payload)     => apiFetch('/orders',            { method: 'POST', body: JSON.stringify(payload) }),
+  myOrders:      ()            => apiFetch('/orders/my'),
+  myWishlist:    ()            => apiFetch('/orders/my/wishlist'),
+  incomingOrders:()            => apiFetch('/orders/incoming'),
+  getOrder:      (id)          => apiFetch(`/orders/${id}`),
+  updateStatus:  (id, status)  => apiFetch(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
 };
 
 // ── Custom Order API ────────────────────────────────────────────────────────
 const CommissionAPI = {
-  create:    (payload) => apiFetch('/api/custom-orders', { method: 'POST', body: JSON.stringify(payload) }),
-  myOrders:  ()        => apiFetch('/api/custom-orders/my'),
-  incoming:  ()        => apiFetch('/api/custom-orders/incoming'),
-  get:       (id)      => apiFetch(`/api/custom-orders/${id}`),
-  update:    (id, p)   => apiFetch(`/api/custom-orders/${id}`, { method: 'PUT', body: JSON.stringify(p) }),
-  uploadRefs:(id, fd)  => apiFetch(`/api/custom-orders/${id}/images`, { method: 'POST', body: fd }),
+  create:    (payload) => apiFetch('/custom-orders', { method: 'POST', body: JSON.stringify(payload) }),
+  myOrders:  ()        => apiFetch('/custom-orders/my'),
+  incoming:  ()        => apiFetch('/custom-orders/incoming'),
+  get:       (id)      => apiFetch(`/custom-orders/${id}`),
+  update:    (id, p)   => apiFetch(`/custom-orders/${id}`, { method: 'PUT', body: JSON.stringify(p) }),
+  uploadRefs:(id, fd)  => apiFetch(`/custom-orders/${id}/images`, { method: 'POST', body: fd }),
 };
 
 // ── AI API ──────────────────────────────────────────────────────────────────
 const AIAPI = {
-  recommendations: () => apiFetch('/api/ai/recommendations'),
-  generateDesc:    (formData) => apiFetch('/api/ai/generate-description', { method: 'POST', body: formData }),
-  findSimilar:     (formData) => apiFetch('/api/ai/similar', { method: 'POST', body: formData }),
+  recommendations: () => apiFetch('/ai/recommendations'),
+  generateDesc:    (formData) => apiFetch('/ai/generate-description', { method: 'POST', body: formData }),
+  findSimilar:     (formData) => apiFetch('/ai/similar', { method: 'POST', body: formData }),
 };
 
 // ── Analytics API ────────────────────────────────────────────────────────────
 const AnalyticsAPI = {
-  artist: () => apiFetch('/api/analytics/artist'),
+  artist: () => apiFetch('/analytics/artist'),
 };
 
 // ── Toast utility ────────────────────────────────────────────────────────────
