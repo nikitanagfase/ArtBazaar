@@ -208,7 +208,7 @@ function debounce(fn, delay = 300) {
 // ── Artwork placeholder image ────────────────────────────────────────────────
 function artworkImg(urls, title = '') {
   const placeholder = `https://placehold.co/400x300/F0EBE1/C8622A?text=${encodeURIComponent(title || 'Art')}`;
-  return urls && urls.length > 0 ? `${API_BASE}${urls[0]}` : placeholder;
+  return urls && urls.length > 0 ? urls[0] : placeholder;
 }
 
 // ── Navbar scroll effect ────────────────────────────────────────────────────
