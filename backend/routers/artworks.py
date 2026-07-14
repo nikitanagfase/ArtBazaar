@@ -2,9 +2,12 @@
 routers/artworks.py  –  Artwork listing, creation, update, and image upload.
 """
 
-import os, uuid, shutil
+import os, uuid, shutil, tempfile
 from pathlib import Path
 from typing import List, Optional
+
+import cloudinary
+import cloudinary.uploader
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, BackgroundTasks
 from sqlalchemy.orm import Session
@@ -16,8 +19,12 @@ from auth import get_current_user, get_current_artist
 
 router = APIRouter(prefix="/api/artworks", tags=["artworks"])
 
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads")) / "artworks"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
 
 ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 MAX_IMAGES  = 6
@@ -143,7 +150,7 @@ def delete_artwork(
 @router.post("/{artwork_id}/images", response_model=schemas.ArtworkOut)
 def upload_artwork_images(
     artwork_id: int,
-    background_tasks: BackgroundTasks,          # ← add this
+    background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),
     current_user: models.User = Depends(get_current_artist),
     db: Session = Depends(get_db),
@@ -154,27 +161,36 @@ def upload_artwork_images(
         raise HTTPException(400, f"Maximum {MAX_IMAGES} images per artwork")
 
     saved_urls = list(art.image_urls or [])
-    first_image_path = None                     # ← add this
+    first_image_path = None
 
     for f in files:
         ext = Path(f.filename).suffix.lower()
         if ext not in ALLOWED_EXT:
             raise HTTPException(400, f"Unsupported file type: {ext}")
 
-        fname = f"{artwork_id}_{uuid.uuid4().hex}{ext}"
-        dest  = UPLOAD_DIR / fname
-        with dest.open("wb") as out:
-            shutil.copyfileobj(f.file, out)
-        saved_urls.append(f"/static/artworks/{fname}")
+        # Save to a temp file first (needed for CLIP embedding computation)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+            shutil.copyfileobj(f.file, tmp)
+            tmp_path = tmp.name
 
-        if first_image_path is None:            # ← add this
-            first_image_path = str(dest)        # ← add this
+        # Upload to Cloudinary (persistent storage, survives redeploys)
+        result = cloudinary.uploader.upload(
+            tmp_path,
+            folder="artbazaar/artworks",
+            public_id=f"{artwork_id}_{uuid.uuid4().hex}",
+        )
+        saved_urls.append(result["secure_url"])
+
+        if first_image_path is None:
+            first_image_path = tmp_path
+        else:
+            os.remove(tmp_path)  # cleanup temp files we don't need anymore
 
     art.image_urls = saved_urls
     db.commit()
     db.refresh(art)
 
-    # ── Compute CLIP embedding in background ──  ← add this block
+    # ── Compute CLIP embedding in background ──
     if first_image_path:
         from routers.ai import compute_and_store_embedding
         background_tasks.add_task(
@@ -200,12 +216,6 @@ def delete_artwork_image(
     urls = list(art.image_urls or [])
     if img_index < 0 or img_index >= len(urls):
         raise HTTPException(400, "Invalid image index")
-
-    # Optionally delete the physical file
-    fname = Path(urls[img_index]).name
-    disk_path = UPLOAD_DIR / fname
-    if disk_path.exists():
-        disk_path.unlink()
 
     urls.pop(img_index)
     art.image_urls = urls
