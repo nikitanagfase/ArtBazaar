@@ -21,10 +21,10 @@ const Auth = {
   isArtist:  () => Auth.getUser()?.role === 'artist',
   isBuyer:   () => Auth.getUser()?.role === 'buyer',
   logout: () => {
-    Auth.clearToken();
-    Auth.clearUser();
-    window.location.href = '/frontend/index.html';
-  }
+  Auth.clearToken();
+  Auth.clearUser();
+  window.location.href = '/index.html';
+}
 };
 
 // ── Core fetch wrapper ─────────────────────────────────────────────────────
