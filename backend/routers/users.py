@@ -102,16 +102,42 @@ def upload_avatar(
 
 # ── Public artist profile ──────────────────────────────────────────────────
 
-@router.get("/artist/{artist_id}", response_model=schemas.UserOut)
-def get_artist_profile(artist_id: int, db: Session = Depends(get_db)):
-    artist = (
+@router.get("/artists")
+def get_all_artists(db: Session = Depends(get_db)):
+    artists = (
         db.query(models.User)
-        .filter(models.User.id == artist_id, models.User.role == models.UserRole.artist)
-        .first()
+        .filter(
+            models.User.role == models.UserRole.artist,
+            models.User.is_active == True,
+        )
+        .order_by(models.User.created_at.desc())
+        .all()
     )
-    if not artist:
-        raise HTTPException(404, "Artist not found")
-    return artist
+
+    result = []
+    for artist in artists:
+        artwork_count = len(artist.artworks)
+        order_count = (
+            db.query(models.OrderItem)
+            .join(models.Artwork, models.OrderItem.artwork_id == models.Artwork.id)
+            .filter(models.Artwork.artist_id == artist.id)
+            .count()
+        )
+        result.append({
+            "id": artist.id,
+            "full_name": artist.full_name,
+            "email": artist.email,
+            "role": artist.role,
+            "avatar_url": artist.avatar_url,
+            "bio": artist.bio,
+            "location": artist.location,
+            "is_active": artist.is_active,
+            "is_verified": artist.is_verified,
+            "created_at": artist.created_at,
+            "artwork_count": artwork_count,
+            "order_count": order_count,
+        })
+    return result
 
 
 # ── Notifications ──────────────────────────────────────────────────────────

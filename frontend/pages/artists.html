@@ -174,7 +174,7 @@
   async function loadArtists() {
     const grid = document.getElementById('artistsGrid');
     try {
-      const data = await apiFetch('/api/auth/artists');
+      const data = await apiFetch('/auth/artists');
       const artists = Array.isArray(data) ? data : (data.artists || data.items || []);
 
       if (!artists.length) {

@@ -180,13 +180,13 @@ function renderAIFeatures() {
       </div>
     </div>`).join('');
 }
+// ── Testimonials ───────────────────────────────────────────────────────────
+const TESTIMONIALS = [
+  { name: 'Priya Sharma',   role: 'Art Collector, Mumbai',    text: 'ArtBazaar helped me find a stunning original painting for my living room. The image search feature is incredible!', rating: 5, avatar: '🎨' },
+  { name: 'Rajan Mehta',    role: 'Artist, Jaipur',           text: 'I sold my first artwork within a week of joining. The AI description tool saved me hours of writing!', rating: 5, avatar: '🖌️' },
+  { name: 'Anika Verma',    role: 'Interior Designer, Delhi',  text: 'The custom commission feature is a game-changer. I requested a bespoke piece and the artist delivered beyond expectations.', rating: 5, avatar: '✨' },
+];
 
-// ── Testimonials ────────────────────────────────────────────────────────────
-//const TESTIMONIALS = [
-//  { name: 'Priya Sharma',   role: 'Art Collector, Mumbai',    text: 'ArtBazaar helped me find a stunning original painting for my living room. The image search feature is incredible!', rating: 5, avatar: '🎨' },
-//  { name: 'Rajan Mehta',    role: 'Artist, Jaipur',           text: 'I sold my first artwork within a week of joining. The AI description tool saved me hours of writing!', rating: 5, avatar: '🖌️' },
-//  { name: 'Anika Verma',    role: 'Interior Designer, Delhi',  text: 'The custom commission feature is a game-changer. I requested a bespoke piece and the artist delivered beyond expectations.', rating: 5, avatar: '✨' },
-//];
 
 function renderTestimonials() {
   const grid = document.getElementById('testimonialGrid');

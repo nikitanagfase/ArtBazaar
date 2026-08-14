@@ -2,9 +2,7 @@
  * api.js  –  ArtBazaar centralised API client.
  * All fetch calls go through here for consistent token handling and error toasting.
  */
-
-const API_BASE  = "https://artbazaar.onrender.com/api";
-
+const API_BASE = "https://artbazaar.onrender.com/api";
 
 // ── Token helpers ──────────────────────────────────────────────────────────
 const Auth = {
